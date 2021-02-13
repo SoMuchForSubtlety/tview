@@ -637,3 +637,19 @@ func stripTags(text string) string {
 	})
 	return escapePattern.ReplaceAllString(stripped, `[$1$2]`)
 }
+
+// OffsetColor darkens or bightens a color
+func OffsetColor(color tcell.Color) tcell.Color {
+	r, g, b := color.TrueColor().RGB()
+	if r+g+b < 100 {
+		r += (255 - r) / 2
+		g += (255 - g) / 2
+		b += (255 - b) / 2
+	} else {
+		r /= 2
+		g /= 2
+		b /= 2
+	}
+
+	return tcell.NewRGBColor(r, g, b)
+}

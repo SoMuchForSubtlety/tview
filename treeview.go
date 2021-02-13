@@ -299,6 +299,9 @@ type TreeView struct {
 
 	// The visible nodes, top-down, as set by process().
 	nodes []*TreeNode
+
+	// tint determines the foreground color of a selected cell
+	tint func(tcell.Color) tcell.Color
 }
 
 // NewTreeView returns a new tree view.
@@ -307,7 +310,15 @@ func NewTreeView() *TreeView {
 		Box:           NewBox(),
 		graphics:      true,
 		graphicsColor: Styles.GraphicsColor,
+		tint:          OffsetColor,
 	}
+}
+
+// TintFunc let's you set a custom function that determines the foreground (text) color of a selected node.
+// It only gets used if the background color is set to tcell.ColorDefault
+func (t *TreeView) TintFunc(tint func(tcell.Color) tcell.Color) *TreeView {
+	t.tint = tint
+	return t
 }
 
 // SetRoot sets the root node of the tree.
@@ -697,7 +708,11 @@ func (t *TreeView) Draw(screen tcell.Screen) {
 			if node.textX+prefixWidth < width {
 				style := tcell.StyleDefault.Foreground(node.color)
 				if node == t.currentNode {
-					style = tcell.StyleDefault.Background(node.color).Foreground(t.backgroundColor)
+					if t.backgroundColor == Styles.PrimitiveBackgroundColor {
+						style = tcell.StyleDefault.Background(node.color).Foreground(t.tint(node.color))
+					} else {
+						style = tcell.StyleDefault.Background(node.color).Foreground(t.backgroundColor)
+					}
 				}
 				printWithStyle(screen, node.text, x+node.textX+prefixWidth, posY, width-node.textX-prefixWidth, AlignLeft, style)
 			}
